@@ -1,7 +1,7 @@
 QR Code generator library - C++
 ===============================
 
-2025-04-07, Charon: taken from https://github.com/nayuki/QR-Code-generator/tree/master/cpp and adapted to run with watcom 1.9 C++98 compiler. Using the provided Makefile it runs on a 8088 CPU on MSDOS. All QrCodeGeneratorDemo cases run fine, but you might need a somwhat bigger Console Window to be able to scan the qr codes (I used 132x60 on doxbox-x). Small ones should show up correctly. Later I plan to add some graphics mode to show qr codes better.
+2025-04-07, Charon: taken from https://github.com/nayuki/QR-Code-generator/tree/master/cpp and adapted to run with watcom 1.9 C++98 compiler. Using the provided Makefile it runs on a 8088 CPU on MSDOS. All QrCodeGeneratorDemo cases run fine, but you might need a somewhat bigger Console Window to be able to scan the qr codes (I used 132x60 on doxbox-x). Small ones should show up correctly. Later I plan to add some graphics mode to show qr codes better.
 
 
 Introduction
