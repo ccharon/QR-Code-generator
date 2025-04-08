@@ -56,7 +56,7 @@ void setPixel(int x, int y, int color);
 
 // The main application program.
 int main(int argc, char *argv[]) {
-    const char *text = "https://www.nayuki.io/";
+	const char *text = "https://www.nayuki.io/";
 	
 	if (argc == 2)
         text = argv[1];
@@ -85,8 +85,8 @@ static void doBasicDemo() {
 	const char *text = "Hello, world!";              // User-supplied text
 	const QrCode::Ecc errCorLvl = QrCode::LOW;       // Error correction level
 	
-    // Make and print the QR Code symbol
-    const QrCode qr = QrCode::encodeText(text, errCorLvl);
+	// Make and print the QR Code symbol
+	const QrCode qr = QrCode::encodeText(text, errCorLvl);
 	printQrCGA(qr, text);
 
 	std::cout << toSvgString(qr, 4).c_str() << std::endl;
@@ -274,38 +274,38 @@ static std::string toSvgString(const QrCode &qr, int border) {
 	if (border > INT_MAX / 2 || border * 2 > INT_MAX - qr.getSize())
 		throw std::overflow_error("Border too large");
 	
-		std::string sb;
-		sb += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-		sb += "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
-		sb += "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 ";
-	
-		// Convert numbers to strings using sprintf
-		char buffer[32];
-		std::sprintf(buffer, "%d", qr.getSize() + border * 2);
-		sb += buffer;
-		sb += " ";
-		std::sprintf(buffer, "%d", qr.getSize() + border * 2);
-		sb += buffer;
-		sb += "\" stroke=\"none\">\n";
-		sb += "\t<rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/>\n";
-		sb += "\t<path d=\"";
-	
-		for (int y = 0; y < qr.getSize(); y++) {
-			for (int x = 0; x < qr.getSize(); x++) {
-				if (qr.getModule(x, y)) {
-					sb += " M";
-					std::sprintf(buffer, "%d", x + border);
-					sb += buffer;
-					sb += ",";
-					std::sprintf(buffer, "%d", y + border);
-					sb += buffer;
-					sb += "h1v1h-1z";
-				}
+	std::string sb;
+	sb += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+	sb += "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
+	sb += "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"0 0 ";
+
+	// Convert numbers to strings using sprintf
+	char buffer[32];
+	std::sprintf(buffer, "%d", qr.getSize() + border * 2);
+	sb += buffer;
+	sb += " ";
+	std::sprintf(buffer, "%d", qr.getSize() + border * 2);
+	sb += buffer;
+	sb += "\" stroke=\"none\">\n";
+	sb += "\t<rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/>\n";
+	sb += "\t<path d=\"";
+
+	for (int y = 0; y < qr.getSize(); y++) {
+		for (int x = 0; x < qr.getSize(); x++) {
+			if (qr.getModule(x, y)) {
+				sb += " M";
+				std::sprintf(buffer, "%d", x + border);
+				sb += buffer;
+				sb += ",";
+				std::sprintf(buffer, "%d", y + border);
+				sb += buffer;
+				sb += "h1v1h-1z";
 			}
-		}	
-		sb += "\" fill=\"#000000\"/>\n";
-		sb += "</svg>\n";
-		return sb;
+		}
+	}	
+	sb += "\" fill=\"#000000\"/>\n";
+	sb += "</svg>\n";
+	return sb;
 }
 
 // Prints the given QrCode object to the console.
@@ -323,18 +323,18 @@ static void printQr(const QrCode &qr) {
 
 // Function to set a pixel in CGA 320x200 monochrome mode
 void setPixel(int x, int y, int color) {
-    if (x < 0 || x >= 320 || y < 0 || y >= 200) {
-        return;  // Ignore out-of-bounds pixels
-    }
-
+	if (x < 0 || x >= 320 || y < 0 || y >= 200) {
+	return;  // Ignore out-of-bounds pixels
+	}
+	
 	uint8_t far* video = (uint8_t far*)0xB8000000L;
     
-    // Calculate byte offset
-    uint16_t offset = ((y & 1) << 13) + (y >> 1) * 80 + (x >> 2);
-    uint8_t shift = (3 - (x & 3)) * 2; // shift amount for pixel within the byte
-
-    uint8_t mask = 0x03 << shift;      // mask to clear pixel
-    video[offset] = (video[offset] & ~mask) | ((color & 0x03) << shift);
+	// Calculate byte offset
+	uint16_t offset = ((y & 1) << 13) + (y >> 1) * 80 + (x >> 2);
+	uint8_t shift = (3 - (x & 3)) * 2; // shift amount for pixel within the byte
+	
+	uint8_t mask = 0x03 << shift;      // mask to clear pixel
+	video[offset] = (video[offset] & ~mask) | ((color & 0x03) << shift);
 }
 
 // Function to render a centered QR code in CGA 320x200 mode
@@ -364,7 +364,7 @@ static void printQrCGA(const QrCode &qr, const char *info) {
 	regs.h.al = 0x04;  // CGA 640x200 monochrome mode
 	int86(0x10, &regs, &regs);
 
-    std::cout << info << std::endl;
+	std::cout << info << std::endl;
 
 	// Render the QR code
 	for (int y = -border; y < qr.getSize() + border; y++) {  // rows
