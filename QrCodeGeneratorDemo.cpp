@@ -38,7 +38,6 @@
 #include <conio.h>
 #include "qrcodegen.hpp"
 
-using std::uint8_t;
 using qrcodegen::QrCode;
 using qrcodegen::QrSegment;
 
@@ -52,9 +51,9 @@ static void doMaskDemo();
 static std::string toSvgString(const QrCode &qr, int border);
 static void printQr(const QrCode &qr);
 static void printQrCGA(const QrCode &qr, const char *info);
-void setPixel(int x, int y, int color);
-void setVideoMode(unsigned char mode);
-unsigned char getVideoMode();
+static void setPixel(int x, int y, int color);
+static void setVideoMode(unsigned char mode);
+static uint8_t getVideoMode();
 
 // The main application program.
 int main(int argc, char *argv[]) {
@@ -68,6 +67,7 @@ int main(int argc, char *argv[]) {
 	doVarietyDemo();	
 	doSegmentDemo();
 	doMaskDemo();
+	
 	return EXIT_SUCCESS;
 }
 
@@ -231,7 +231,7 @@ static void doSegmentDemo() {
 	qrcodegen::BitBuffer bb;
 
 	for (std::size_t i = 0; i < kanjiChars.size(); i++)
-		bb.appendBits(static_cast<std::uint32_t>(kanjiChars[i]), 13);
+		bb.appendBits(static_cast<uint32_t>(kanjiChars[i]), 13);
 
 	QrSegment kanjiSegment(QrSegment::Mode::KANJI, static_cast<int>(kanjiChars.size()), bb);
 	std::vector<QrSegment> kanjiSegments;
@@ -324,14 +324,14 @@ static void printQr(const QrCode &qr) {
 
 /*---- CGA Mode Helper ----*/
 
-void setVideoMode(unsigned char mode) {
+static void setVideoMode(uint8_t mode) {
 	union REGS regs;
 	regs.h.ah = 0x00;
 	regs.h.al = mode;
 	int86(0x10, &regs, &regs);
 }
 
-unsigned char getVideoMode() {
+static uint8_t getVideoMode() {
 	union REGS regs;
 	regs.h.ah = 0x0F;
 	int86(0x10, &regs, &regs);
@@ -339,7 +339,7 @@ unsigned char getVideoMode() {
 }
 
 // Function to set a pixel in CGA 320x200 4 color mode
-void setPixel(int x, int y, int color) {
+static void setPixel(int x, int y, int color) {
 	if (x < 0 || x >= 320 || y < 0 || y >= 200) {
 	return;  // Ignore out-of-bounds pixels
 	}
@@ -377,7 +377,7 @@ static void printQrCGA(const QrCode &qr, const char *info) {
 	int startY = (200 - pixelHeight) / 2; // Vertical centering
 
 	// remember current mode and set CGA 320x200 4 color mode
-	unsigned char initialVideoMode = getVideoMode();
+	uint8_t initialVideoMode = getVideoMode();
 	setVideoMode(0x04);
 
 	std::cout << info << std::endl;
