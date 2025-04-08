@@ -53,6 +53,8 @@ static std::string toSvgString(const QrCode &qr, int border);
 static void printQr(const QrCode &qr);
 static void printQrCGA(const QrCode &qr, const char *info);
 void setPixel(int x, int y, int color);
+void setVideoMode(unsigned char mode);
+unsigned char getVideoMode();
 
 // The main application program.
 int main(int argc, char *argv[]) {
@@ -320,6 +322,21 @@ static void printQr(const QrCode &qr) {
 	std::cout << std::endl;
 }
 
+/*---- CGA Mode Helper ----*/
+
+void setVideoMode(unsigned char mode) {
+	union REGS regs;
+	regs.h.ah = 0x00;
+	regs.h.al = mode;
+	int86(0x10, &regs, &regs);
+}
+
+unsigned char getVideoMode() {
+	union REGS regs;
+	regs.h.ah = 0x0F;
+	int86(0x10, &regs, &regs);
+	return regs.h.al;
+}
 
 // Function to set a pixel in CGA 320x200 4 color mode
 void setPixel(int x, int y, int color) {
@@ -358,12 +375,10 @@ static void printQrCGA(const QrCode &qr, const char *info) {
 	// Calculate the starting position to center the QR code
 	int startX = (320 - pixelWidth) / 2;  // Horizontal centering
 	int startY = (200 - pixelHeight) / 2; // Vertical centering
-	
-	// Set CGA 320x200 4 color mode
-	union REGS regs;
-	regs.h.ah = 0x00;  // BIOS function to set video mode
-	regs.h.al = 0x04;  // CGA 320x200 4 color mode
-	int86(0x10, &regs, &regs);
+
+	// remember current mode and set CGA 320x200 4 color mode
+	unsigned char initialVideoMode = getVideoMode();
+	setVideoMode(0x04);
 
 	std::cout << info << std::endl;
 
@@ -384,8 +399,6 @@ static void printQrCGA(const QrCode &qr, const char *info) {
 	// Wait for a key press
 	getch();
 	
-	// Return to text mode
-	regs.h.ah = 0x00;  // BIOS function to set video mode
-	regs.h.al = 0x03;  // 80x25 text mode
-	int86(0x10, &regs, &regs);
+	// Restore previous mode
+	setVideoMode(initialVideoMode);
 }
