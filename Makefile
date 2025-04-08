@@ -1,4 +1,4 @@
-project_name = qrcodegeneratordemo
+project_name = qrcode
 
 memory_model = -mc
 compile_options = -0 $(memory_model) -oh -os -s -zp2 -wcd=880 -zpw -we -xs -i.
