@@ -339,50 +339,50 @@ void setPixel(int x, int y, int color) {
 
 // Function to render a centered QR code in CGA 320x200 mode
 static void printQrCGA(const QrCode &qr, const char *info) {
-    const int border = 4;  // Border size in QR modules
-    const int scaleX = 1;  // Horizontal scale factor (4 pixels per module)
-    const int scaleY = 1;  // Vertical scale factor (4 pixels per module)
+	const int border = 4;  // Border size in QR modules
+	const int scaleX = 1;  // Horizontal scale factor (4 pixels per module)
+	const int scaleY = 1;  // Vertical scale factor (4 pixels per module)
 
-    // Calculate the total QR code size in pixels
-    int qrSize = qr.getSize() + 2 * border;  // QR code size including border (in modules)
-    int pixelWidth = qrSize * scaleX;       // Total width in pixels
-    int pixelHeight = qrSize * scaleY;      // Total height in pixels
+	// Calculate the total QR code size in pixels
+	int qrSize = qr.getSize() + 2 * border;  // QR code size including border (in modules)
+	int pixelWidth = qrSize * scaleX;       // Total width in pixels
+	int pixelHeight = qrSize * scaleY;      // Total height in pixels
 
-    // Ensure the QR code fits within the 320x200 resolution
-    if (pixelWidth > 320 || pixelHeight > 200) {
-        std::cerr << "Error: QR code is too large to fit on the screen." << std::endl;
-        return;
-    }
+	// Ensure the QR code fits within the 320x200 resolution
+	if (pixelWidth > 320 || pixelHeight > 200) {
+		std::cerr << "Error: QR code is too large to fit on the screen." << std::endl;
+		return;
+	}
 
-    // Calculate the starting position to center the QR code
+	// Calculate the starting position to center the QR code
 	int startX = (320 - pixelWidth) / 2;  // Horizontal centering
 	int startY = (200 - pixelHeight) / 2; // Vertical centering
-
+	
 	// Set CGA 320x200 4 color mode
 	union REGS regs;
 	regs.h.ah = 0x00;  // BIOS function to set video mode
 	regs.h.al = 0x04;  // CGA 640x200 monochrome mode
 	int86(0x10, &regs, &regs);
-	
-	std::cout << info << std::endl;
 
-    // Render the QR code
-    for (int y = -border; y < qr.getSize() + border; y++) {  // rows
-        for (int x = -border; x < qr.getSize() + border; x++) {  // columns
-            int color = qr.getModule(x, y) ? 0 : 1;  // Black or white module
-            for (int dy = 0; dy < scaleY; dy++) {  // vertical scaling
-                for (int dx = 0; dx < scaleX; dx++) {  // horizontal scaling
+    std::cout << info << std::endl;
+
+	// Render the QR code
+	for (int y = -border; y < qr.getSize() + border; y++) {  // rows
+		for (int x = -border; x < qr.getSize() + border; x++) {  // columns
+			int color = qr.getModule(x, y) ? 0 : 1;  // Black or white module
+			for (int dy = 0; dy < scaleY; dy++) {  // vertical scaling
+				for (int dx = 0; dx < scaleX; dx++) {  // horizontal scaling
 					int xPos = startX + (x + border) * scaleX + dx;  // Horizontal position
 					int yPos = startY + (y + border) * scaleY + dy;  // Vertical position
-                    setPixel(xPos, yPos, color);
-                }
-            }
-        }
-    }
+					setPixel(xPos, yPos, color);
+				}
+			}
+		}
+	}
 	
 	// Wait for a key press
 	getch();
-
+	
 	// Return to text mode
 	regs.h.ah = 0x00;  // BIOS function to set video mode
 	regs.h.al = 0x03;  // 80x25 text mode
