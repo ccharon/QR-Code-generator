@@ -91,7 +91,7 @@ static void doBasicDemo() {
 
 	std::cout << toSvgString(qr, 4).c_str() << std::endl;
 
-    // UTF-8 binary-encoded version of "https://www.heise.de"
+	// UTF-8 binary-encoded version of "https://www.heise.de"
 	std::vector<unsigned char> urlBytes;
 	urlBytes.push_back(0x68);
 	urlBytes.push_back(0x74);
@@ -114,8 +114,8 @@ static void doBasicDemo() {
 	urlBytes.push_back(0x64);
 	urlBytes.push_back(0x65);
 	
-    // Generate the QR code using the binary data
-    const QrCode qr2 = QrCode::encodeBinary(urlBytes, errCorLvl);
+	// Generate the QR code using the binary data
+	const QrCode qr2 = QrCode::encodeBinary(urlBytes, errCorLvl);
 	printQrCGA(qr2, "UTF-8 binary-encoded version of https://www.heise.de");
 }
 
@@ -321,7 +321,7 @@ static void printQr(const QrCode &qr) {
 }
 
 
-// Function to set a pixel in CGA 320x200 monochrome mode
+// Function to set a pixel in CGA 320x200 4 color mode
 void setPixel(int x, int y, int color) {
 	if (x < 0 || x >= 320 || y < 0 || y >= 200) {
 	return;  // Ignore out-of-bounds pixels
@@ -340,8 +340,9 @@ void setPixel(int x, int y, int color) {
 // Function to render a centered QR code in CGA 320x200 mode
 static void printQrCGA(const QrCode &qr, const char *info) {
 	const int border = 4;  // Border size in QR modules
-	const int scaleX = 1;  // Horizontal scale factor (4 pixels per module)
-	const int scaleY = 1;  // Vertical scale factor (4 pixels per module)
+	// scale set to 1 for the variety demo, 4 looks best
+	const int scaleX = 1;  // Horizontal scale factor (pixels per module)
+	const int scaleY = 1;  // Vertical scale factor (pixels per module)
 
 	// Calculate the total QR code size in pixels
 	int qrSize = qr.getSize() + 2 * border;  // QR code size including border (in modules)
@@ -361,7 +362,7 @@ static void printQrCGA(const QrCode &qr, const char *info) {
 	// Set CGA 320x200 4 color mode
 	union REGS regs;
 	regs.h.ah = 0x00;  // BIOS function to set video mode
-	regs.h.al = 0x04;  // CGA 640x200 monochrome mode
+	regs.h.al = 0x04;  // CGA 320x200 4 color mode
 	int86(0x10, &regs, &regs);
 
 	std::cout << info << std::endl;
