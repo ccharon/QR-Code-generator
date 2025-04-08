@@ -34,6 +34,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <dos.h>
+#include <conio.h>
 #include "qrcodegen.hpp"
 
 using std::uint8_t;
@@ -42,26 +44,41 @@ using qrcodegen::QrSegment;
 
 
 // Function prototypes
+static void doBasicGraphicsDemo(const char *text);
 static void doBasicDemo();
 static void doVarietyDemo();
 static void doSegmentDemo();
 static void doMaskDemo();
 static std::string toSvgString(const QrCode &qr, int border);
 static void printQr(const QrCode &qr);
-
+static void printQrCGA(const QrCode &qr, const char *info);
+void setPixel(int x, int y, int color);
 
 // The main application program.
-int main() {
+int main(int argc, char *argv[]) {
+    const char *text = "https://www.nayuki.io/";
+	
+	if (argc == 2)
+        text = argv[1];
+	
+	doBasicGraphicsDemo(text);
 	doBasicDemo();
-	doVarietyDemo();
+	doVarietyDemo();	
 	doSegmentDemo();
 	doMaskDemo();
 	return EXIT_SUCCESS;
 }
 
 
-
 /*---- Demo suite ----*/
+static void doBasicGraphicsDemo(const char *text) {
+	const QrCode::Ecc errCorLvl = QrCode::LOW;       // Error correction level
+
+	// Make and print the QR Code symbol
+	const QrCode qr = QrCode::encodeText(text, errCorLvl);
+	printQrCGA(qr, text);
+}
+
 
 // Creates a single QR Code, then prints it to the console.
 static void doBasicDemo() {
@@ -70,7 +87,8 @@ static void doBasicDemo() {
 	
     // Make and print the QR Code symbol
     const QrCode qr = QrCode::encodeText(text, errCorLvl);
-	printQr(qr);
+	printQrCGA(qr, text);
+
 	std::cout << toSvgString(qr, 4).c_str() << std::endl;
 
     // UTF-8 binary-encoded version of "https://www.heise.de"
@@ -98,23 +116,23 @@ static void doBasicDemo() {
 	
     // Generate the QR code using the binary data
     const QrCode qr2 = QrCode::encodeBinary(urlBytes, errCorLvl);
-    //printQr(qr2);
+	printQrCGA(qr2, "UTF-8 binary-encoded version of https://www.heise.de");
 }
 
 // Creates a variety of QR Codes that exercise different features of the library, and prints each one to the console.
 static void doVarietyDemo() {
 	// Numeric mode encoding (3.33 bits per digit)
 	const QrCode qr0 = QrCode::encodeText("314159265358979323846264338327950288419716939937510", QrCode::MEDIUM);
-	printQr(qr0);
+	printQrCGA(qr0, "Numeric mode encoding (3.33 bits per digit)");
 	
 	// Alphanumeric mode encoding (5.5 bits per character)
 	const QrCode qr1 = QrCode::encodeText("DOLLAR-AMOUNT:$39.87 PERCENTAGE:100.00% OPERATIONS:+-*/", QrCode::HIGH);
-	printQr(qr1);
+	printQrCGA(qr1, "Alphanumeric mode encoding (5.5 bits per character)");
 	
 	// Unicode text as UTF-8
 	const QrCode qr2 = QrCode::encodeText("\xE3\x81\x93\xE3\x82\x93\xE3\x81\xAB\xE3\x81\xA1wa\xE3\x80\x81"
 		"\xE4\xB8\x96\xE7\x95\x8C\xEF\xBC\x81\x20\xCE\xB1\xCE\xB2\xCE\xB3\xCE\xB4", QrCode::QUARTILE);
-	printQr(qr2);
+	printQrCGA(qr2, "Unicode text as UTF-8");
 	
 	// Moderately large QR Code using longer text (from Lewis Carroll's Alice in Wonderland)
 	const QrCode qr3 = QrCode::encodeText(
@@ -125,7 +143,7 @@ static void doVarietyDemo() {
 		"for the hot day made her feel very sleepy and stupid), whether the pleasure of making a "
 		"daisy-chain would be worth the trouble of getting up and picking the daisies, when suddenly "
 		"a White Rabbit with pink eyes ran close by her.", QrCode::HIGH);
-	printQr(qr3);
+	printQrCGA(qr3, "Moderately large QR Code using longer text (from Lewis Carroll's Alice in Wonderland)");
 }
 
 
@@ -137,23 +155,22 @@ static void doSegmentDemo() {
 	const QrCode qr0 = QrCode::encodeText(
 		(std::string(silver0) + silver1).c_str(),
 		QrCode::LOW);
-	printQr(qr0);
+	
+	printQrCGA(qr0, "Illustration \"silver\"");
 	
 	std::vector<QrSegment> segments;
 	segments.push_back(QrSegment::makeAlphanumeric(silver0));
 	segments.push_back(QrSegment::makeNumeric(silver1));
 	
 	const QrCode qr1 = QrCode::encodeSegments(segments, QrCode::LOW);
-	printQr(qr1);
+	printQrCGA(qr1, "Illustration \"silver\" alpha + numeric");
 	
 	// Illustration "golden"
 	const char *golden0 = "Golden ratio \xCF\x86 = 1.";
 	const char *golden1 = "6180339887498948482045868343656381177203091798057628621354486227052604628189024497072072041893911374";
 	const char *golden2 = "......";
-	const QrCode qr2 = QrCode::encodeText(
-		(std::string(golden0) + golden1 + golden2).c_str(),
-		QrCode::LOW);
-	printQr(qr2);
+	const QrCode qr2 = QrCode::encodeText((std::string(golden0) + golden1 + golden2).c_str(), QrCode::LOW);
+	printQrCGA(qr2, "Illustration \"golden\"");
 	
 	std::vector<uint8_t> bytes(golden0, golden0 + std::strlen(golden0));
 	std::vector<QrSegment> segments3;
@@ -162,7 +179,7 @@ static void doSegmentDemo() {
 	segments3.push_back(QrSegment::makeAlphanumeric(golden2));
 	
 	const QrCode qr3 = QrCode::encodeSegments(segments3, QrCode::LOW);
-	printQr(qr3);
+	printQrCGA(qr3, "Illustration \"golden\" bytes + numeric + alpha");
 	
 	// Illustration "Madoka": kanji, kana, Cyrillic, full-width Latin, Greek characters
 	const char *madoka =  // Encoded in UTF-8
@@ -176,7 +193,7 @@ static void doSegmentDemo() {
 		"\xBD\x95\xE3\x80\x80\xCE\xBA\xCE\xB1\xEF"
 		"\xBC\x9F";
 	const QrCode qr4 = QrCode::encodeText(madoka, QrCode::LOW);
-	printQr(qr4);
+	printQrCGA(qr4, "Illustration \"Madoka\": kanji, kana, Cyrillic, full-width Latin, Greek characters");
 	
 	std::vector<int> kanjiChars;  // Kanji mode encoding (13 bits per character)
 	kanjiChars.push_back(0x0035);
@@ -219,7 +236,7 @@ static void doSegmentDemo() {
 	kanjiSegments.push_back(kanjiSegment);
 	
 	const QrCode qr5 = QrCode::encodeSegments(kanjiSegments, QrCode::LOW);
-	printQr(qr5);
+	printQrCGA(qr5, "Kanji mode encoding (13 bits per character)");
 }
 
 
@@ -227,8 +244,8 @@ static void doSegmentDemo() {
 static void doMaskDemo() {
 	// Project Nayuki URL
 	std::vector<QrSegment> segs0 = QrSegment::makeSegments("https://www.nayuki.io/");
-	printQr(QrCode::encodeSegments(segs0, QrCode::HIGH, QrCode::MIN_VERSION, QrCode::MAX_VERSION, -1, true));  // Automatic mask
-	printQr(QrCode::encodeSegments(segs0, QrCode::HIGH, QrCode::MIN_VERSION, QrCode::MAX_VERSION, 3, true));  // Force mask 3
+	printQrCGA(QrCode::encodeSegments(segs0, QrCode::HIGH, QrCode::MIN_VERSION, QrCode::MAX_VERSION, -1, true), "Automatic mask");
+	printQrCGA(QrCode::encodeSegments(segs0, QrCode::HIGH, QrCode::MIN_VERSION, QrCode::MAX_VERSION, 3, true), "Force mask 3");
 	
 	// Chinese text as UTF-8
 	std::vector<QrSegment> segs1 = QrSegment::makeSegments(
@@ -239,10 +256,10 @@ static void doMaskDemo() {
 		"\xE3\x80\x81\xE5\x85\xAC\xE9\x96\x8B\xE7\xB7\xA8\xE8\xBC\xAF\xE4\xB8\x94\xE5\xA4"
 		"\x9A\xE8\xAA\x9E\xE8\xA8\x80\xE7\x9A\x84\xE7\xB6\xB2\xE8\xB7\xAF\xE7\x99\xBE\xE7"
 		"\xA7\x91\xE5\x85\xA8\xE6\x9B\xB8\xE5\x8D\x94\xE4\xBD\x9C\xE8\xA8\x88\xE7\x95\xAB");
-	printQr(QrCode::encodeSegments(segs1, QrCode::MEDIUM, QrCode::MIN_VERSION, QrCode::MAX_VERSION, 0, true));  // Force mask 0
-	printQr(QrCode::encodeSegments(segs1, QrCode::MEDIUM, QrCode::MIN_VERSION, QrCode::MAX_VERSION, 1, true));  // Force mask 1
-	printQr(QrCode::encodeSegments(segs1, QrCode::MEDIUM, QrCode::MIN_VERSION, QrCode::MAX_VERSION, 5, true));  // Force mask 5
-	printQr(QrCode::encodeSegments(segs1, QrCode::MEDIUM, QrCode::MIN_VERSION, QrCode::MAX_VERSION, 7, true));  // Force mask 7
+	printQrCGA(QrCode::encodeSegments(segs1, QrCode::MEDIUM, QrCode::MIN_VERSION, QrCode::MAX_VERSION, 0, true), "Force mask 0");
+	printQrCGA(QrCode::encodeSegments(segs1, QrCode::MEDIUM, QrCode::MIN_VERSION, QrCode::MAX_VERSION, 1, true), "Force mask 1");
+	printQrCGA(QrCode::encodeSegments(segs1, QrCode::MEDIUM, QrCode::MIN_VERSION, QrCode::MAX_VERSION, 5, true), "Force mask 5");
+	printQrCGA(QrCode::encodeSegments(segs1, QrCode::MEDIUM, QrCode::MIN_VERSION, QrCode::MAX_VERSION, 7, true), "Force mask 7");
 }
 
 
@@ -291,7 +308,6 @@ static std::string toSvgString(const QrCode &qr, int border) {
 		return sb;
 }
 
-
 // Prints the given QrCode object to the console.
 static void printQr(const QrCode &qr) {
 	int border = 4;
@@ -302,4 +318,73 @@ static void printQr(const QrCode &qr) {
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
+}
+
+
+// Function to set a pixel in CGA 320x200 monochrome mode
+void setPixel(int x, int y, int color) {
+    if (x < 0 || x >= 320 || y < 0 || y >= 200) {
+        return;  // Ignore out-of-bounds pixels
+    }
+
+	uint8_t far* video = (uint8_t far*)0xB8000000L;
+    
+    // Calculate byte offset
+    uint16_t offset = ((y & 1) << 13) + (y >> 1) * 80 + (x >> 2);
+    uint8_t shift = (3 - (x & 3)) * 2; // shift amount for pixel within the byte
+
+    uint8_t mask = 0x03 << shift;      // mask to clear pixel
+    video[offset] = (video[offset] & ~mask) | ((color & 0x03) << shift);
+}
+
+// Function to render a centered QR code in CGA 320x200 mode
+static void printQrCGA(const QrCode &qr, const char *info) {
+    const int border = 4;  // Border size in QR modules
+    const int scaleX = 1;  // Horizontal scale factor (4 pixels per module)
+    const int scaleY = 1;  // Vertical scale factor (4 pixels per module)
+
+    // Calculate the total QR code size in pixels
+    int qrSize = qr.getSize() + 2 * border;  // QR code size including border (in modules)
+    int pixelWidth = qrSize * scaleX;       // Total width in pixels
+    int pixelHeight = qrSize * scaleY;      // Total height in pixels
+
+    // Ensure the QR code fits within the 320x200 resolution
+    if (pixelWidth > 320 || pixelHeight > 200) {
+        std::cerr << "Error: QR code is too large to fit on the screen." << std::endl;
+        return;
+    }
+
+    // Calculate the starting position to center the QR code
+	int startX = (320 - pixelWidth) / 2;  // Horizontal centering
+	int startY = (200 - pixelHeight) / 2; // Vertical centering
+
+	// Set CGA 320x200 4 color mode
+	union REGS regs;
+	regs.h.ah = 0x00;  // BIOS function to set video mode
+	regs.h.al = 0x04;  // CGA 640x200 monochrome mode
+	int86(0x10, &regs, &regs);
+	
+	std::cout << info << std::endl;
+
+    // Render the QR code
+    for (int y = -border; y < qr.getSize() + border; y++) {  // rows
+        for (int x = -border; x < qr.getSize() + border; x++) {  // columns
+            int color = qr.getModule(x, y) ? 0 : 1;  // Black or white module
+            for (int dy = 0; dy < scaleY; dy++) {  // vertical scaling
+                for (int dx = 0; dx < scaleX; dx++) {  // horizontal scaling
+					int xPos = startX + (x + border) * scaleX + dx;  // Horizontal position
+					int yPos = startY + (y + border) * scaleY + dy;  // Vertical position
+                    setPixel(xPos, yPos, color);
+                }
+            }
+        }
+    }
+	
+	// Wait for a key press
+	getch();
+
+	// Return to text mode
+	regs.h.ah = 0x00;  // BIOS function to set video mode
+	regs.h.al = 0x03;  // 80x25 text mode
+	int86(0x10, &regs, &regs);
 }
